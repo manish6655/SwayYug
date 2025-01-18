@@ -5,9 +5,9 @@ import requests
 from urllib.parse import quote
 
 # Constants
-API_KEY = "RDPycn2DkoMo8a7aHjFzRY98kzfDjBPn"
-LANGFLOW_URL = "https://api.langflow.astra.datastax.com/lf/33924fc4-c206-4c8b-9d46-36917ef56de0/api/v1/run/930ed97c-43f8-4a49-bdce-2d757858e3b0?stream=false"
-
+API_KEY = ""
+LANGFLOW_URL = ""
+LANGFLOW_TOKEN = ""
 # Fetch search results from SerpAPI
 def fetch_search_results(query):
     encoded_query = quote(query)
