@@ -7,7 +7,6 @@ from urllib.parse import quote
 # Constants
 API_KEY = "RDPycn2DkoMo8a7aHjFzRY98kzfDjBPn"
 LANGFLOW_URL = "https://api.langflow.astra.datastax.com/lf/33924fc4-c206-4c8b-9d46-36917ef56de0/api/v1/run/930ed97c-43f8-4a49-bdce-2d757858e3b0?stream=false"
-LANGFLOW_TOKEN = "AstraCS:smRcHcXNOwdhzyZTeZpZvFqY:e05ba8a87acaee2f62b4986957ff139271c6b443dabc7437ff264dd2e3cc8d00"
 
 # Fetch search results from SerpAPI
 def fetch_search_results(query):
