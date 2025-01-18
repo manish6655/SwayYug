@@ -1,53 +1,28 @@
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Search and Analyze</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-            }
-            .form-container {
-                margin-bottom: 20px;
-            }
-            .results {
-                margin-top: 20px;
-            }
-            .result-item {
-                margin-bottom: 20px;
-                padding: 10px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Search and Analyze</h1>
-        <div class="form-container">
-            <form method="POST">
-                {% csrf_token %}
-                <label for="query">Enter your search query:</label>
-                <input type="text" id="query" name="query" required>
-                <button type="submit">Search</button>
-            </form>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Query Results</title>
+</head>
+<body>
+    <h1>Search Query</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="query" placeholder="Enter your query" required>
+        <button type="submit">Search</button>
+    </form>
 
-        {% if error %}
-            <p style="color: red;">{{ error }}</p>
-        {% endif %}
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
 
-        {% if query %}
-            <h2>Results for "{{ query }}"</h2>
-            <div class="results">
-                <h3>Scraped Results:</h3>
-                <pre>{{ scraped_results }}</pre>
-
-                <h3>LangFlow Response:</h3>
-                <pre>{{ langflow_output }}</pre>
-                
-            </div>
-        {% endif %}
-    </body>
-    </html>
+    {% if query %}
+        <h2>Results for: {{ query }}</h2>
+        <h3>Scraped Results:</h3>
+        <pre>{{ scraped_results }}</pre>
+        <h3>LangFlow Output:</h3>
+        <p>{{ langflow_output }}</p>
+    {% endif %}
+</body>
+</html>

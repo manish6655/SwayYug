@@ -82,15 +82,6 @@ DATABASES = {
 }
 
 
-import os
-
-# Astra DB credentials
-ASTRA_DB_CLIENT_ID = os.getenv("ASTRA_DB_CLIENT_ID", "your-client-id")
-ASTRA_DB_CLIENT_SECRET = os.getenv("ASTRA_DB_CLIENT_SECRET", "your-client-secret")
-ASTRA_DB_KEYSPACE = os.getenv("ASTRA_DB_KEYSPACE", "your-keyspace")
-SECURE_CONNECT_BUNDLE_PATH = os.getenv("SECURE_CONNECT_BUNDLE_PATH", "path/to/secure-connect-your-database.zip")
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
