@@ -7,6 +7,7 @@
     <!-- Font Link -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js -->
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background-color: #0A0A0A; color: white; }
@@ -41,6 +42,9 @@
 
         /* Bold Styling */
         .bold { font-weight: bold; }
+
+        /* Graph Containers */
+        .graph-container { width: 100%; height: 400px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -48,7 +52,7 @@
     <!-- Navbar -->
     <nav>
         <div>
-            <img src="" alt="SwayYug ART Finder" />
+            <img alt="SwayYug ART Finder" />
         </div>
         <div>
             <button onclick="scrollToSearch()">Get Started</button>
@@ -85,8 +89,19 @@
             <h2>Results for: {{ query }}</h2>
             <h3>Rank Results:</h3>
             <pre>{{ scraped_results | safe }}</pre>
-            <h3>LangFlow Output:</h3>
+            
+            <!-- First Graph for Rank Results -->
+            <div class="graph-container">
+                <canvas id="rankResultsChart"></canvas>
+            </div>
+            
+            <h3>Insights Output:</h3>
             <pre>{{ langflow_output | safe }}</pre>
+            
+            <!-- Second Graph for Insights Output -->
+            <div class="graph-container">
+                <canvas id="insightsOutputChart"></canvas>
+            </div>
         {% elif error %}
             <h2>Error</h2>
             <p style="color: red;">{{ error }}</p>
@@ -110,6 +125,66 @@
                 text = text.replace(/\*\*(.*?)\*\*/g, '<span class="bold">$1</span>');
                 element.innerHTML = text;
             });
+        });
+
+        // Sample data for Rank Results Chart (you can replace this with real data)
+        const rankResultsData = {
+            labels: ['Result 1', 'Result 2', 'Result 3', 'Result 4', 'Result 5'],
+            datasets: [{
+                label: 'Rank Results',
+                data: [12, 19, 3, 5, 2],
+                backgroundColor: ['rgba(30, 144, 255, 0.2)', 'rgba(30, 144, 255, 0.2)', 'rgba(30, 144, 255, 0.2)', 'rgba(30, 144, 255, 0.2)', 'rgba(30, 144, 255, 0.2)'],
+                borderColor: ['rgba(30, 144, 255, 1)', 'rgba(30, 144, 255, 1)', 'rgba(30, 144, 255, 1)', 'rgba(30, 144, 255, 1)', 'rgba(30, 144, 255, 1)'],
+                borderWidth: 1
+            }]
+        };
+
+        // Sample data for Insights Output Chart (you can replace this with real data)
+        const insightsOutputData = {
+            labels: ['Pain Points', 'Triggers', 'Competitor Strategies', 'Sentiment', 'Key Phrases'],
+            datasets: [{
+                label: 'Insights Output',
+                data: [7, 8, 6, 5, 9],
+                backgroundColor: ['rgba(255, 99, 132, 0.2)', 'rgba(255, 159, 64, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)'],
+                borderColor: ['rgba(255, 99, 132, 1)', 'rgba(255, 159, 64, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'],
+                borderWidth: 1
+            }]
+        };
+
+        // Create the Rank Results Chart
+        const rankResultsCtx = document.getElementById('rankResultsChart').getContext('2d');
+        new Chart(rankResultsCtx, {
+            type: 'bar',
+            data: rankResultsData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+
+        // Create the Insights Output Chart
+        const insightsOutputCtx = document.getElementById('insightsOutputChart').getContext('2d');
+        new Chart(insightsOutputCtx, {
+            type: 'pie',
+            data: insightsOutputData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
         });
     </script>
 
