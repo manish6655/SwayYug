@@ -25,14 +25,17 @@ LANGFLOW_TOKEN = "AstraCS:smRcHcXNOwdhzyZTeZpZvFqY:e05ba8a87acaee2f62b4986957ff1
 
 # Create Astra client
 def get_astra_client():
-    # Configure the connection
-    auth_provider = PlainTextAuthProvider(CLIENT_ID, CLIENT_SECRET)
-    cluster = Cluster(
-        cloud={"secure_connect_bundle": SECURE_CONNECT_BUNDLE_PATH},
-        auth_provider=auth_provider
-    )
-    session = cluster.connect(KEYSPACE)
-    return session, cluster
+    try:
+        auth_provider = PlainTextAuthProvider(CLIENT_ID, CLIENT_SECRET)
+        cluster = Cluster(
+            cloud={"secure_connect_bundle": SECURE_CONNECT_BUNDLE_PATH},
+            auth_provider=auth_provider
+        )
+        session = cluster.connect(KEYSPACE)
+        return session, cluster
+    except Exception as e:
+        print(f"Error connecting to Astra DB: {e}")
+        return None, None
 
 # Fetch search results from SerpAPI
 def fetch_search_results(query):
@@ -50,7 +53,6 @@ def fetch_search_results(query):
     finally:
         conn.close()
 
-# Combine scraped results into a single string
 def prepare_langflow_input(results):
     combined_input = ""
     for result in results[:10]:  # Limit to top 10 results
@@ -60,7 +62,6 @@ def prepare_langflow_input(results):
         combined_input += f"Title: {title}\nDescription: {description}\nSource: {source}\n------\n"
     return combined_input
 
-# Call LangFlow API
 def call_langflow_api(data):
     headers = {
         'Content-Type': 'application/json',
@@ -73,39 +74,41 @@ def call_langflow_api(data):
     }
     try:
         response = requests.post(LANGFLOW_URL, headers=headers, json=payload)
-        response.raise_for_status()  # Raise exception for HTTP errors
+        response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error while calling LangFlow API: {e}")
         return {"error": "LangFlow API request failed."}
 
-# Insert data into Astra DB
 def insert_query_result(user_id, query, scraped_results, langflow_output):
-    session, cluster = get_astra_client()  # Get Astra DB session
+    session, cluster = get_astra_client()
+    if not session:
+        return
+
     try:
-        # Insert data into the table
         session.execute("""
             INSERT INTO user_queries (id, user_id, query, scraped_results, langflow_output, timestamp)
             VALUES (%s, %s, %s, %s, %s, %s)
         """, (
-            uuid4(),  # id
-            user_id,  # user_id
-            query,  # query
-            scraped_results,  # scraped_results
-            langflow_output,  # langflow_output
-            datetime.now()  # timestamp
+            uuid4(),  
+            user_id,  
+            query,  
+            scraped_results,  
+            langflow_output,  
+            datetime.now()  
         ))
         print("Data inserted into Astra DB successfully.")
     except Exception as e:
         print(f"Error inserting data into Astra DB: {e}")
     finally:
-        cluster.shutdown()  # Close the connection
+        cluster.shutdown()
 
-# Check if query already exists in the database
 def get_existing_query_result(user_id, query):
-    session, cluster = get_astra_client()  # Get Astra DB session
+    session, cluster = get_astra_client()
+    if not session:
+        return None
+
     try:
-        # Query the table for existing results
         result = session.execute("""
             SELECT scraped_results, langflow_output
             FROM user_queries
@@ -114,64 +117,53 @@ def get_existing_query_result(user_id, query):
         """, (user_id, query))
 
         if result:
-            return result.one()  # Return the first matching row
+            return result.one()
         else:
             return None
     except Exception as e:
         print(f"Error querying Astra DB: {e}")
         return None
     finally:
-        cluster.shutdown()  # Close the connection
+        cluster.shutdown()
 
 # Index view
 def index(request):
     if request.method == "POST":
-        # Get user input
         query = request.POST.get("query", "")
-        print(f"Fetching results for '{query}'...")
-
-        # Get user ID (or "anonymous" if not logged in)
         user_id = request.user.id if request.user.is_authenticated else "anonymous"
-
-        # Check if the query already exists in the database
+        
+        # Check if the query already exists in DB
         existing_result = get_existing_query_result(user_id, query)
         if existing_result:
-            print("Query already exists in the database. Retrieving stored results...")
             return render(request, "index.html", {
                 "query": query,
                 "scraped_results": existing_result.scraped_results,
                 "langflow_output": existing_result.langflow_output,
             })
-
-        # Fetch results from SerpAPI
+        
+        # Fetch the search results
         response = fetch_search_results(query)
         if not response or "organic" not in response:
             return render(request, "index.html", {"error": "No search results found."})
-
-        # Prepare input for LangFlow
+        
+        # Prepare LangFlow input from the search results
         langflow_input = prepare_langflow_input(response["organic"])
-        print("Prepared LangFlow Input:")
-        print(langflow_input)
-
-        # Call LangFlow API
-        print("Calling LangFlow API...")
+        
+        # Call LangFlow API with the input
         langflow_output = call_langflow_api(langflow_input)
-
         if "error" in langflow_output:
             return render(request, "index.html", {"error": langflow_output["error"]})
-
-        # Extract main LangFlow output
+        
+        # Extract the final result from LangFlow output
         main_output = langflow_output.get("outputs", [])[0].get("outputs", [])[0].get("results", {}).get("message", {}).get("text", "")
-
-        # Save data into Astra DB
+        
+        # Insert query and results into Astra DB
         insert_query_result(user_id, query, langflow_input, main_output)
-
-        # Pass results to the template
+        
         return render(request, "index.html", {
             "query": query,
-            "scraped_results": langflow_input,  # Show scraped results
-            "langflow_output": main_output,  # Show LangFlow's main output
+            "scraped_results": langflow_input, 
+            "langflow_output": main_output,
         })
-
-    # Render the form for GET requests
+    
     return render(request, "index.html")
