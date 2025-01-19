@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ART Finder - Automated Research and Trigger Finder</title>
+    <title>SwayYug ART Finder - Automated Research and Trigger Finder</title>
     <!-- Font Link -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -39,6 +39,8 @@
         .results-section h2 { font-size: 24px; margin-bottom: 20px; }
         .results-section pre { background-color: #0A0A0A; padding: 20px; border-radius: 10px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
 
+        /* Bold Styling */
+        .bold { font-weight: bold; }
     </style>
 </head>
 <body>
@@ -46,7 +48,7 @@
     <!-- Navbar -->
     <nav>
         <div>
-            <img src="" alt="ART Finder" />
+            <img src="" alt="SwayYug ART Finder" />
         </div>
         <div>
             <button onclick="scrollToSearch()">Get Started</button>
@@ -57,10 +59,10 @@
     <section class="hero">
         <div class="intro">
             <i class="fab fa-twitter text-gray-400"></i>
-            <span class="text-gray-400 text-sm">Introducing ART Finder: Automated Research and Trigger Finder</span>
+            <span class="text-gray-400 text-sm">Introducing SwayYug ART Finder: Automated Research and Trigger Finder</span>
         </div>
         <h1>What do you want to research?</h1>
-        <p>Automate your research process with ART Finder. Identify pain points, triggers, and competitor strategies effortlessly.</p>
+        <p>Automate your research process with SwayYug ART Finder. Identify pain points, triggers, and competitor strategies effortlessly.</p>
 
         <!-- Search Box -->
         <form method="POST" class="search-box" id="searchBox">
@@ -81,10 +83,10 @@
     <section class="results-section">
         {% if query %}
             <h2>Results for: {{ query }}</h2>
-            <h3>Scraped Results:</h3>
-            <pre>{{ scraped_results }}</pre>
+            <h3>Rank Results:</h3>
+            <pre>{{ scraped_results | safe }}</pre>
             <h3>LangFlow Output:</h3>
-            <pre>{{ langflow_output }}</pre>
+            <pre>{{ langflow_output | safe }}</pre>
         {% elif error %}
             <h2>Error</h2>
             <p style="color: red;">{{ error }}</p>
@@ -99,6 +101,16 @@
         function setInputValue(value) {
             document.getElementById('searchInput').value = value;
         }
+
+        // Function to convert **text** to bold
+        document.addEventListener("DOMContentLoaded", function () {
+            let elements = document.querySelectorAll('.results-section pre');
+            elements.forEach(function (element) {
+                let text = element.innerHTML;
+                text = text.replace(/\*\*(.*?)\*\*/g, '<span class="bold">$1</span>');
+                element.innerHTML = text;
+            });
+        });
     </script>
 
 </body>
